@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2e;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Wrapper to center logo above login box */
+        .login-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* Logo circle */
+        .logo {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            position: relative;
+            z-index: 1;
+            transform: translateY(-50%);
+        }
+
+        .logo-img {
+            width: 90%;
+            height: 90%;
+            object-fit: contain;
+        }
+
+        /* Login Box Styling */
+        .login-container {
+            background: #252532;
+            padding: 30px;
+            border-radius: 10px;
+            width: 350px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            margin-top: -40px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            color: #6ac6a8;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            background: #33334d;
+            color: white;
+            outline: none;
+        }
+
+        input:focus {
+            border: 2px solid #6ac6a8;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background: #6ac6a8;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #58b094;
+        }
+
+        .error-message {
+            color: red;
+            margin-top: 10px;
+            display: none;
+        }
+
+        p {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        a {
+            color: #6ac6a8;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .login-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            gap: 10px;
+        }
+
+        .login-options a {
+            color: white;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+
+        .login-options button {
+            width: auto;
+            padding: 8px 16px;
+            margin-top: 0;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <div class="logo"> 
+            <img src="{{ url_for('static', filename='Logo/Logo.png') }}" alt="Logo" class="logo-img">
+        </div>
+
+        <div class="login-container">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+
+                <button type="submit">Login</button>
+                <p class="error-message" id="errorMsg"></p>
+            </form>
+            <p>Don't have an account? <a href="/register">Register here</a></p>
+            <div class="login-options">
+                <a href="/reset-password">Forgot your password?</a>
+                <button type="button" id="guestLoginBtn">Login as a Guest</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById("loginForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent page reload
+
+            const username = document.getElementById("username").value;
+            const password = document.getElementById("password").value;
+            const errorMsg = document.getElementById("errorMsg");
+
+            fetch("/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = "/dashboard"; // Redirect on success
+                } else {
+                    errorMsg.textContent = "❌ Incorrect username or password. Try again.";
+                    errorMsg.style.display = "block";
+                }
+            })
+            .catch(error => {
+                alert("⚠️ An error occurred. Please try again later.");
+            });
+        });
+
+        document.getElementById("guestLoginBtn").addEventListener("click", () => {
+            fetch("/guest-login", {
+                method: "POST"
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = "/dashboard";
+                } else {
+                    alert("⚠️ Unable to login as guest.");
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

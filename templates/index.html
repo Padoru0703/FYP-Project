@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCGenie Chat</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #1e1e2e;
+            color: white;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        #toggleSidebarBtn {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 9999;
+        background: #44445a;
+        color: white;
+        border: none;
+        padding: 10px;
+        border-radius: 5px;
+        cursor: pointer;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 250px;
+            min-width: 250px;
+            background: #252532;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+            transform: translateX(0);
+            z-index: 1000;
+            height: 100vh;
+            position: relative;
+        }
+
+        .menu-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            width: 100%;
+        }
+
+        .user-section {
+            width: 100%;
+            padding: 20px 0 10px;
+            border-top: 1px solid #444;
+            background-color: #252532;
+        }
+
+        .sidebar.hidden {
+            transform: translateX(-100%);
+            position: absolute;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            background: white;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .menu {
+            flex-grow: 1;
+            width: 100%;
+            padding-bottom: 20px;
+        }
+
+        .menu button {
+            width: 100%;
+            padding: 10px;
+            background: #33334d;
+            color: white;
+            border: none;
+            text-align: left;
+            font-size: 16px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .menu button:hover {
+            background: #44445a;
+        }
+
+        .user-section {
+            width: 100%;
+            padding: 20px;
+            border-top: 1px solid #444;
+            margin-top: auto;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            color: #fff;
+        }
+
+        .user-icon {
+            font-size: 20px;
+            margin-right: 10px;
+        }
+
+        .username {
+            font-size: 16px;
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 10px;
+            background: #44445a;
+            color: white;
+            border: none;
+            font-size: 14px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            background: #55556d;
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Chatbox Styling */
+        .chat-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            margin-left: 0; /* No margin unless sidebar is hidden */
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .sidebar.hidden ~ .chat-container {
+            margin-left: 60px;
+            width: 100%;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            min-height: 200px;
+            max-height: calc(100vh - 80px);
+        }
+
+        /* Chat Bubble Styling */
+        .message {
+            display: flex;
+            align-items: flex-start;
+            max-width: 80%;
+            margin-bottom: 15px;
+        }
+
+        .bot-message {
+            align-self: flex-start;
+        }
+
+        .user-message {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 10px;
+        }
+
+        .message .bubble {
+            background: #33334d;
+            padding: 10px 15px;
+            border-radius: 10px;
+            max-width: 70%;
+            position: relative;
+            display: inline-block;
+        }
+
+        .user-message .bubble {
+            background: #6ac6a8;
+            color: black;
+            border-top-right-radius: 0;
+        }
+
+        .bot-message .bubble {
+            border-top-left-radius: 0;
+        }
+
+        /* Input Box */
+        .input-container {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: #252532;
+            border-top: 1px solid #444;
+            width: 100%;
+            box-sizing: border-box;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .input-container input {
+            flex-grow: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .input-container button {
+            background: #6ac6a8;
+            color: black;
+            border: none;
+            padding: 12px 15px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .input-container button:hover {
+            background: #58b094;
+        }
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: white;
+            border-radius: 50%;
+            animation: blink 1s infinite alternate;
+            margin-left: 5px;
+        }
+
+        .chat-entry {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Push trash icon to the right */
+            background: #2c2f33;
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            cursor: pointer; /* Make whole bar clickable */
+        }
+
+        .chat-entry:hover {
+            background: #3a3d41;
+        }
+
+        .active-chat {
+            background: #4CAF50 !important;
+            color: white;
+        }
+
+        .chat-name {
+            flex-grow: 1; /* Allows name to take available space */
+            color: white;
+        }
+
+        .delete-chat {
+            font-size: 16px;
+            color: red;
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .delete-chat:hover {
+            color: #ff4d4d;
+        }
+
+        .account-menu {
+            display: none;
+            position: absolute;
+            left: 50px; /* Adjust position */
+            top: 10px;
+            background-color: white;
+            border: 1px solid #ddd;
+            padding: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+        }
+
+        .account-menu button {
+            display: block;
+            width: 100%;
+            background: none;
+            border: none;
+            padding: 8px;
+            cursor: pointer;
+            text-align: left;
+        }
+
+        .account-menu button:hover {
+            background-color: #f0f0f0;
+        }
+
+
+        @keyframes blink {
+            0% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Toggle Button -->
+    <button id="toggleSidebarBtn">☰</button>
+    <div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='Logo/Logo.png') }}" alt="Logo" class="logo-img">
+        </div>
+
+        <div class="menu-container">
+            <div class="menu" id="chatHistory">
+                <button onclick="newChat()">+ New Chat</button>
+            </div>
+        </div>
+
+        <div class="user-section">
+            <div class="user-info">
+                <span class="user-icon">👤</span>
+                <span class="username">{{ username }}</span>
+            </div>
+            <button class="logout-btn" onclick="logoutUser()"> 🚪 Log out</button>
+        </div>
+    </div>
+
+
+    <!-- Chat Area -->
+    <div class="chat-container">
+        <div class="chat-box" id="chatBox">
+            <div class="message bot-message">
+                <div class="icon">🤖</div>
+                <div class="bubble">
+                    👋 Hello there! Welcome to PCGenie, your smart assistant for building the perfect PC.<br>
+                    I can help you:
+                    <ul>
+                        <li>⚡ Compare components</li>
+                        <li>🔧 Suggest builds based on your needs</li>
+                        <li>🛠️ Guide you through the assembly process</li>
+                    </ul>
+                    What are you looking to do today? 🤔
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Box -->
+        <div class="input-container">
+            <input type="text" id="dataInput" placeholder="Ask PCGenie..." onkeydown="handleKey(event)">
+            <button onclick="sendData()">Send</button>
+            <button id="voiceBtn" onclick="toggleVoiceRecognition()">🎙️</button>
+        </div>
+    </div>
+    </div>
+
+    <script>
+        function addMessage(text, isUser) {
+            const chatBox = document.getElementById("chatBox");
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message", isUser ? "user-message" : "bot-message");
+
+            const iconDiv = document.createElement("div");
+            iconDiv.classList.add("icon");
+            iconDiv.textContent = isUser ? "👤" : "🤖";
+
+            const bubbleDiv = document.createElement("div");
+            bubbleDiv.classList.add("bubble");
+            bubbleDiv.innerHTML = text;
+
+            messageDiv.appendChild(iconDiv);
+            messageDiv.appendChild(bubbleDiv);
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+        }
+
+
+        function sendData() {
+            const inputField = document.getElementById("dataInput");
+            const value = inputField.value.trim();
+            if (!value) return;
+
+            addMessage(value, true);
+            inputField.value = "";
+
+            const chatBox = document.getElementById("chatBox");
+            const botMessageDiv = document.createElement("div");
+            botMessageDiv.classList.add("message", "bot-message");
+
+            const iconDiv = document.createElement("div");
+            iconDiv.classList.add("icon");
+            iconDiv.textContent = "🤖";
+
+            const bubbleDiv = document.createElement("div");
+            bubbleDiv.classList.add("bubble");
+
+            const loadingDiv = document.createElement("span");
+            loadingDiv.classList.add("loading");
+            loadingDiv.textContent = "Typing...";
+
+            botMessageDiv.appendChild(iconDiv);
+            botMessageDiv.appendChild(bubbleDiv);
+            botMessageDiv.appendChild(loadingDiv);
+            chatBox.appendChild(botMessageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: value })
+            }).then(response => {
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let botMessage = "";
+
+                function read() {
+                    reader.read().then(({ done, value }) => {
+                        if (done) {
+                            loadingDiv.remove();
+                            return;
+                        }
+
+                        const chunk = decoder.decode(value, { stream: true });
+                        botMessage += chunk;
+                        bubbleDiv.innerHTML = botMessage.replace(/\n/g, "<br>");
+                        chatBox.scrollTop = chatBox.scrollHeight;
+
+                        read(); // Continue reading next chunk
+                    });
+                }
+
+                read();
+            });
+
+
+        }
+
+
+        function handleKey(event) {
+            if (event.key === "Enter") {
+                sendData();
+            }
+        }
+
+        function updateChat(response) {
+            let chatBox = document.getElementById("chat-output");
+            let chatMessage = document.createElement("div");
+          
+            chatBox.appendChild(chatMessage);
+        }
+
+        document.addEventListener("DOMContentLoaded", loadChatHistory);
+
+        function loadChatHistory() {
+            fetch("/chat-history")
+                .then(response => response.json())
+                .then(chats => {
+                    const chatHistoryDiv = document.getElementById("chatHistory");
+                    chatHistoryDiv.innerHTML = '<button onclick="newChat()">+ New Chat</button>';
+
+                    const currentChatId = sessionStorage.getItem("currentChatId");
+
+                    chats.forEach(chat_id => {
+                        const chatContainer = document.createElement("div");
+                        chatContainer.classList.add("chat-entry");
+                        chatContainer.onclick = () => {
+                            sessionStorage.setItem("currentChatId", chat_id);
+                            loadChat(chat_id);
+                            loadChatHistory(); // Refresh to update highlight
+                        };
+
+                        if (chat_id === currentChatId) {
+                            chatContainer.classList.add("active-chat");
+                        }
+
+                        // Chat name
+                        const chatName = document.createElement("span");
+                        chatName.textContent = "Chat " + chat_id.slice(0, 5);
+                        chatName.classList.add("chat-name");
+
+                        // Delete icon
+                        const deleteIcon = document.createElement("span");
+                        deleteIcon.innerHTML = "🗑️"; // Trash icon
+                        deleteIcon.classList.add("delete-chat");
+                        deleteIcon.onclick = (event) => {
+                            event.stopPropagation(); // Prevents triggering chat selection
+                            deleteChat(chat_id);
+                        };
+
+                        // Append elements inside chatContainer
+                        chatContainer.appendChild(chatName);
+                        chatContainer.appendChild(deleteIcon);
+                        chatHistoryDiv.appendChild(chatContainer);
+                    });
+                });
+        }
+
+        function loadChat(chat_id) {
+            fetch(`/chat-history/${chat_id}`)
+                .then(response => response.json())
+                .then(messages => {
+                    const chatBox = document.getElementById("chatBox");
+                    chatBox.innerHTML = "";
+
+                    messages.forEach(msg => {
+                        addMessage(msg.message, msg.sender === "user");
+                    });
+
+                    sessionStorage.setItem("currentChatId", chat_id);
+                });
+        }
+
+        function newChat() {
+            fetch("/new-chat", { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    const chatBox = document.getElementById("chatBox");
+                    chatBox.innerHTML = "";
+
+                    sessionStorage.setItem("currentChatId", data.chat_id); // Save new chat ID
+                    loadChatHistory(); // Reload chat list with new session
+                })
+                .catch(error => console.error("Error starting new chat:", error));
+        }
+
+        function deleteChat(chat_id) {
+            if (!confirm("Are you sure you want to delete this chat?")) return;
+
+            fetch(`/delete-chat/${chat_id}`, { method: "DELETE" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (sessionStorage.getItem("currentChatId") === chat_id) {
+                            sessionStorage.removeItem("currentChatId"); // Clear session if deleted chat was active
+                        }
+                        loadChatHistory(); // Refresh sidebar
+                        location.reload();
+                    } else {
+                        alert("Error deleting chat: " + data.message);
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+        function toggleAccountMenu() {
+            const menu = document.getElementById("accountMenu");
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+        }
+
+
+
+        function logoutUser() {
+            fetch("/logout", { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = "/login"; // Redirect to login page after logout
+                    } else {
+                        alert("Logout failed!");
+                    }
+                })
+                .catch(error => console.error("Error logging out:", error));
+        }
+
+        // Close menu when clicking outside
+        document.addEventListener("click", function(event) {
+            const menu = document.getElementById("accountMenu");
+            if (menu && !event.target.closest(".logo")) {
+                menu.style.display = "none";
+            }
+        });
+
+        //Speech to Text
+        let recognition;
+        let isListening = false;
+        function toggleVoiceRecognition() {
+            if (!recognition) {
+                recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = "en-US";
+                recognition.continuous = true;  // Allows speaking without interruption
+                recognition.interimResults = false;
+
+                recognition.onresult = function(event) {
+                    let transcript = event.results[event.results.length - 1][0].transcript;
+                    document.getElementById("dataInput").value = transcript; // Update input field
+                };
+
+                recognition.onerror = function(event) {
+                    alert("Speech recognition error: " + event.error);
+                    stopVoiceRecognition();
+                };
+            }
+
+            if (!isListening) {
+                recognition.start();
+                document.getElementById("voiceBtn").textContent = "🎙️ Stop Talking"; // Change button when recording
+                isListening = true;
+            } else {
+                stopVoiceRecognition();
+            }
+        }
+
+        function stopVoiceRecognition() {
+            if (recognition) {
+                recognition.stop();
+                document.getElementById("voiceBtn").textContent = "🎙️"; // Reset button
+                isListening = false;
+                sendData(); // Automatically send message after stopping
+            }
+        }
+
+        const toggleBtn = document.getElementById('toggleSidebarBtn');
+        const sidebar = document.querySelector('.sidebar');
+        const appContainer = document.querySelector('.app-container');
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('hidden');
+        });
+
+
+
+    </script>
+
